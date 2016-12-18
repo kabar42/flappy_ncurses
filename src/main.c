@@ -14,7 +14,7 @@ static void drawBg();
 
 static chtype BG_CHAR;
 static const int BG_COLOR = 2;
-static const clock_t TICK = 0.1 * CLOCKS_PER_SEC;  // Update tick length for the game
+static const clock_t TICK = 0.05 * CLOCKS_PER_SEC;  // Tick length for the game
 
 int main(int argc, char *argv[])
 {
@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     (void) signal(SIGINT, finish);
     setScreenOptions();
 
-    Bird_T player = {(COLS / 3), (LINES / 2), BIRD_CHAR, BIRD_COLOR};
+    Bird_T player = {(COLS / 3), (LINES / 2), 0, (BLOCK_HEIGHT / 2), BIRD_CHAR, BIRD_COLOR};
     clock_t lastTick = 0;
 
     draw(&player);
@@ -38,8 +38,6 @@ int main(int argc, char *argv[])
             int c = getch();
             updatePlayer(&player);
             draw(&player);
-            // endwin();
-            // printf("x: %d y: %d\n", player.xPos, player.yPos);
         }
     }
 
