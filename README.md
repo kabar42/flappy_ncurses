@@ -1,4 +1,6 @@
-# Template project for C builds with Docker
+# Flappy Ncurses
+
+This is still very much a work-in-progress
 
 ## Background
 
@@ -12,3 +14,7 @@ Currently, CMake brings in any *.h and *.c files in the src/ directory
 ## Building
 
 `./scripts/run_docker_build.sh`
+
+## Execution
+
+`./build/flappy_ncurses`

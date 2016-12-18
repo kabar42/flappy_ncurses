@@ -1,59 +1,103 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <curses.h>
 #include <signal.h>
+#include <time.h>
+
+#include "bird.h"
 
 static void finish(int sig);
+static void setScreenOptions();
+static void setColorPairs();
+static void draw(Bird_T* player);
+static void drawBg();
+
+static chtype BG_CHAR;
+static const int BG_COLOR = 2;
+static const clock_t TICK = 0.1 * CLOCKS_PER_SEC;  // Update tick length for the game
 
 int main(int argc, char *argv[])
 {
-    int num = 0;
+    BG_CHAR = ACS_BLOCK;
+    BIRD_CHAR = ACS_BLOCK;
 
-    /* initialize your non-curses data structures here */
+    (void) signal(SIGINT, finish);
+    setScreenOptions();
 
-    (void) signal(SIGINT, finish);      /* arrange interrupts to terminate */
+    Bird_T player = {(COLS / 3), (LINES / 2), BIRD_CHAR, BIRD_COLOR};
+    clock_t lastTick = 0;
 
-    (void) initscr();      /* initialize the curses library */
-    keypad(stdscr, TRUE);  /* enable keyboard mapping */
-    (void) nonl();         /* tell curses not to do NL->CR/NL on output */
-    (void) cbreak();       /* take input chars one at a time, no wait for \n */
-    (void) echo();         /* echo input - in color */
-
-    if (has_colors())
-    {
-        start_color();
-
-        /*
-         * Simple color assignment, often all we need.  Color pair 0 cannot
-         * be redefined.  This example uses the same value for the color
-         * pair as for the foreground color, though of course that is not
-         * necessary:
-         */
-        init_pair(1, COLOR_RED,     COLOR_BLACK);
-        init_pair(2, COLOR_GREEN,   COLOR_BLACK);
-        init_pair(3, COLOR_YELLOW,  COLOR_BLACK);
-        init_pair(4, COLOR_BLUE,    COLOR_BLACK);
-        init_pair(5, COLOR_CYAN,    COLOR_BLACK);
-        init_pair(6, COLOR_MAGENTA, COLOR_BLACK);
-        init_pair(7, COLOR_WHITE,   COLOR_BLACK);
-    }
+    draw(&player);
 
     for (;;)
     {
-        int c = getch();     /* refresh, accept single keystroke of input */
-        attrset(COLOR_PAIR(num % 8));
-        num++;
-
-        /* process the command keystroke */
+        clock_t currentTick = clock();
+        if((currentTick - lastTick) > TICK)
+        {
+            lastTick = currentTick;
+            int c = getch();
+            updatePlayer(&player);
+            draw(&player);
+            // endwin();
+            // printf("x: %d y: %d\n", player.xPos, player.yPos);
+        }
     }
 
-    finish(0);               /* we're done */
+    finish(0);
 }
 
 static void finish(int sig)
 {
     endwin();
 
-    /* do your non-curses wrapup here */
-
     exit(0);
 }
+
+static void setScreenOptions()
+{
+    (void) initscr();       // initialize the curses library
+    keypad(stdscr, TRUE);   // enable keyboard mapping
+    (void) cbreak();        // take input chars one at a time, no waiting for \n
+    // (void) nonl();          // tell curses not to do NL->CR/NL on output
+    (void) curs_set(0);     // make the cursor invisible
+    (void) noecho();        // do not echo input
+    timeout(0);             // non-blocking reads for character input
+
+    if (has_colors())
+    {
+        start_color();
+        setColorPairs();
+    }
+}
+
+static void setColorPairs()
+{
+    init_pair(1, COLOR_YELLOW,  COLOR_YELLOW);
+    init_pair(2, COLOR_BLUE,    COLOR_BLUE);
+    init_pair(3, COLOR_YELLOW,  COLOR_BLUE);
+    init_pair(4, COLOR_BLUE,    COLOR_BLUE);
+    init_pair(5, COLOR_CYAN,    COLOR_BLUE);
+    init_pair(6, COLOR_MAGENTA, COLOR_BLUE);
+    init_pair(7, COLOR_WHITE,   COLOR_BLUE);
+}
+
+static void draw(Bird_T* player)
+{
+    drawBg();
+    drawPlayer(player);
+    refresh();
+}
+
+static void drawBg()
+{
+    attrset(COLOR_PAIR(BG_COLOR));
+
+    for(int y=0; y < LINES; y++)
+    {
+        for(int x=0; x < COLS; x++)
+        {
+            mvaddch(y, x, BG_CHAR);
+        }
+    }
+}
+

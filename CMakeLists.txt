@@ -1,5 +1,6 @@
 cmake_minimum_required( VERSION 3.5 )
-project( ncurses_tutorial )
+set( PROJECT_NAME flappy_ncurses )
+project( ${PROJECT_NAME} )
 
 file( GLOB SOURCE_FILES
 	"src/*.h"
@@ -8,5 +9,5 @@ file( GLOB SOURCE_FILES
 
 find_package( Curses REQUIRED )
 include_directories( ${CURSES_INCLUDE_DIRS} )
-add_executable( ncurses_tut ${SOURCE_FILES} )
-target_link_libraries( ncurses_tut ${CURSES_LIBRARIES} )
+add_executable( ${PROJECT_NAME} ${SOURCE_FILES} )
+target_link_libraries( ${PROJECT_NAME} ${CURSES_LIBRARIES} )
