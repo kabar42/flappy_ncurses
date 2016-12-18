@@ -1,5 +1,4 @@
 # Template project for C builds with Docker
----
 
 ## Background
 
