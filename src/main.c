@@ -1,8 +1,10 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <curses.h>
 #include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
+
+#include <curses.h>
 
 #include "bird.h"
 
@@ -11,6 +13,7 @@ static void setScreenOptions();
 static void setColorPairs();
 static void draw(Bird_T* player);
 static void drawBg();
+static void checkForInputs(Bird_T* player);
 
 static chtype BG_CHAR;
 static const int BG_COLOR = 2;
@@ -24,18 +27,19 @@ int main(int argc, char *argv[])
     (void) signal(SIGINT, finish);
     setScreenOptions();
 
-    Bird_T player = {(COLS / 3), (LINES / 2), 0, (BLOCK_HEIGHT / 2), BIRD_CHAR, BIRD_COLOR};
+    Bird_T player = {(COLS / 4), (LINES / 2), 0, (BLOCK_HEIGHT / 2), BIRD_CHAR, BIRD_COLOR};
     clock_t lastTick = 0;
 
     draw(&player);
 
     for (;;)
     {
+        checkForInputs(&player);
+
         clock_t currentTick = clock();
         if((currentTick - lastTick) > TICK)
         {
             lastTick = currentTick;
-            int c = getch();
             updatePlayer(&player);
             draw(&player);
         }
@@ -96,6 +100,21 @@ static void drawBg()
         {
             mvaddch(y, x, BG_CHAR);
         }
+    }
+}
+
+static void checkForInputs(Bird_T* player)
+{
+    int c = getch();
+    switch(c) {
+    case 'q':
+        finish(0);
+        break;
+    case ' ':
+        jumpPlayer(player);
+        break;
+    default:
+        break;
     }
 }
 
