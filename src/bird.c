@@ -31,6 +31,7 @@ void checkBounds(Bird_T* player)
     if((*player).yPos > LINES)
     {
         (*player).yPos = LINES;
+        (*player).dead = true;
     }
     if((*player).xPos < 0 )
     {

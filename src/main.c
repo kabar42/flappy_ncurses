@@ -11,47 +11,32 @@
 static void finish(int sig);
 static void setScreenOptions();
 static void setColorPairs();
-static void draw(Bird_T* player);
+static void runGame();
+static void initPlayer();
+static void draw();
 static void drawBg();
-static void checkForInputs(Bird_T* player);
+static void checkForInputs();
 
 static chtype BG_CHAR;
 static const int BG_COLOR = 2;
 static const clock_t TICK = 0.05 * CLOCKS_PER_SEC;  // Tick length for the game
 
+static Bird_T player;
+
 int main(int argc, char *argv[])
 {
-    BG_CHAR = ACS_BLOCK;
-    BIRD_CHAR = ACS_BLOCK;
-
     (void) signal(SIGINT, finish);
     setScreenOptions();
-
-    Bird_T player = {(COLS / 4), (LINES / 2), 0, (BLOCK_HEIGHT / 2), BIRD_CHAR, BIRD_COLOR};
-    clock_t lastTick = 0;
-
-    draw(&player);
-
-    for (;;)
+    for(;;)
     {
-        checkForInputs(&player);
-
-        clock_t currentTick = clock();
-        if((currentTick - lastTick) > TICK)
-        {
-            lastTick = currentTick;
-            updatePlayer(&player);
-            draw(&player);
-        }
+        runGame();
     }
-
     finish(0);
 }
 
 static void finish(int sig)
 {
     endwin();
-
     exit(0);
 }
 
@@ -83,10 +68,50 @@ static void setColorPairs()
     init_pair(7, COLOR_WHITE,   COLOR_BLUE);
 }
 
-static void draw(Bird_T* player)
+static void runGame()
+{
+    BG_CHAR = ACS_BLOCK;
+
+    initPlayer();
+    draw();
+
+    clock_t lastTick = 0;
+    for (;;)
+    {
+        checkForInputs();
+
+        clock_t currentTick = clock();
+        if((currentTick - lastTick) > TICK)
+        {
+            lastTick = currentTick;
+            updatePlayer(&player);
+            draw();
+        }
+
+        if(player.dead)
+        {
+            return;
+        }
+    }
+}
+
+static void initPlayer()
+{
+    BIRD_CHAR = ACS_BLOCK;
+
+    player.xPos = (COLS / 4);
+    player.yPos = (LINES / 2);
+    player.speed = 0;
+    player.posInBlock = (BLOCK_HEIGHT / 2);
+    player.dispChar = BIRD_CHAR;
+    player.colorPair = BIRD_COLOR;
+    player.dead = false;
+}
+
+static void draw()
 {
     drawBg();
-    drawPlayer(player);
+    drawPlayer(&player);
     refresh();
 }
 
@@ -103,7 +128,7 @@ static void drawBg()
     }
 }
 
-static void checkForInputs(Bird_T* player)
+static void checkForInputs()
 {
     int c = getch();
     switch(c) {
@@ -111,7 +136,7 @@ static void checkForInputs(Bird_T* player)
         finish(0);
         break;
     case ' ':
-        jumpPlayer(player);
+        jumpPlayer(&player);
         break;
     default:
         break;
