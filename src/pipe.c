@@ -5,7 +5,9 @@
 
 void initPipe(Pipe_T* pipe)
 {
-    srand(clock(NULL) % 7027);
+    PIPE_MAX_GAP_POS = ((LINES-2) - PIPE_MIN_GAP_SIZE);
+
+    srand(clock() % 7027);
     int gapPos = (rand() % (PIPE_MAX_GAP_POS - PIPE_MIN_GAP_POS)) + PIPE_MIN_GAP_POS;
     int gapSize = (rand() % (PIPE_MAX_GAP_SIZE - PIPE_MIN_GAP_SIZE)) + PIPE_MIN_GAP_SIZE;
 
