@@ -3,8 +3,6 @@
 
 #include <curses.h>
 
-static chtype BIRD_CHAR;
-static const int BIRD_COLOR = 1;
 static const int BLOCK_HEIGHT = 15;
 
 typedef struct Bird {
@@ -13,6 +11,7 @@ typedef struct Bird {
     int speed;
     int posInBlock;  // Position of the player within the current block / character
     bool dead;
+    WINDOW* window;
 
     chtype dispChar;
     int colorPair;

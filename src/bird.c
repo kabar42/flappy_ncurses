@@ -50,6 +50,7 @@ void jumpPlayer(Bird_T* player)
 
 void drawPlayer(Bird_T* player)
 {
-    attrset(COLOR_PAIR((*player).colorPair));
-    mvaddch((*player).yPos, (*player).xPos, (*player).dispChar);
+    mvwin((*player).window, (*player).yPos, (*player).xPos);
+    wnoutrefresh((*player).window);
 }
+

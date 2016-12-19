@@ -12,6 +12,7 @@ static void finish(int sig);
 static void setScreenOptions();
 static void setColorPairs();
 static void runGame();
+static void initBg();
 static void initPlayer();
 static void draw();
 static void drawBg();
@@ -22,11 +23,14 @@ static const int BG_COLOR = 2;
 static const clock_t TICK = 0.05 * CLOCKS_PER_SEC;  // Tick length for the game
 
 static Bird_T player;
+WINDOW* rootWin;
+WINDOW* bgWindow;
 
 int main(int argc, char *argv[])
 {
     (void) signal(SIGINT, finish);
     setScreenOptions();
+
     for(;;)
     {
         runGame();
@@ -42,7 +46,7 @@ static void finish(int sig)
 
 static void setScreenOptions()
 {
-    (void) initscr();       // initialize the curses library
+    rootWin = initscr();       // initialize the curses library
     keypad(stdscr, TRUE);   // enable keyboard mapping
     (void) cbreak();        // take input chars one at a time, no waiting for \n
     // (void) nonl();          // tell curses not to do NL->CR/NL on output
@@ -59,7 +63,7 @@ static void setScreenOptions()
 
 static void setColorPairs()
 {
-    init_pair(1, COLOR_YELLOW,  COLOR_YELLOW);
+    init_pair(1, COLOR_BLACK,  COLOR_YELLOW);
     init_pair(2, COLOR_BLUE,    COLOR_BLUE);
     init_pair(3, COLOR_YELLOW,  COLOR_BLUE);
     init_pair(4, COLOR_BLUE,    COLOR_BLUE);
@@ -70,16 +74,13 @@ static void setColorPairs()
 
 static void runGame()
 {
-    BG_CHAR = ACS_BLOCK;
-
+    initBg();
     initPlayer();
     draw();
 
     clock_t lastTick = 0;
     for (;;)
     {
-        checkForInputs();
-
         clock_t currentTick = clock();
         if((currentTick - lastTick) > TICK)
         {
@@ -90,42 +91,59 @@ static void runGame()
 
         if(player.dead)
         {
+            (void) delwin(player.window);
+            (void) delwin(bgWindow);
             return;
+        }
+
+        checkForInputs();
+    }
+}
+
+static void initBg()
+{
+    BG_CHAR = ACS_BLOCK;
+    bgWindow = newwin(0, 0, 0, 0);
+
+    wattrset(bgWindow, COLOR_PAIR(BG_COLOR));
+
+    int max_x, max_y;
+    getmaxyx(bgWindow, max_y, max_x);
+    for(int y=0; y < max_y; y++)
+    {
+        for(int x=0; x < max_x; x++)
+        {
+            mvwaddch(bgWindow, y, x, BG_CHAR);
         }
     }
 }
 
 static void initPlayer()
 {
-    BIRD_CHAR = ACS_BLOCK;
-
     player.xPos = (COLS / 4);
     player.yPos = (LINES / 2);
     player.speed = 0;
     player.posInBlock = (BLOCK_HEIGHT / 2);
-    player.dispChar = BIRD_CHAR;
-    player.colorPair = BIRD_COLOR;
+    player.dispChar = 'W';
+    player.colorPair = 1;
     player.dead = false;
+    player.window = newwin(1, 1, player.yPos, player.xPos);
+
+    wattrset(player.window, COLOR_PAIR(player.colorPair));
+    mvwaddch(player.window, 0, 0, player.dispChar);
 }
 
 static void draw()
 {
     drawBg();
     drawPlayer(&player);
-    refresh();
+    doupdate();
 }
 
 static void drawBg()
 {
-    attrset(COLOR_PAIR(BG_COLOR));
-
-    for(int y=0; y < LINES; y++)
-    {
-        for(int x=0; x < COLS; x++)
-        {
-            mvaddch(y, x, BG_CHAR);
-        }
-    }
+    touchwin(bgWindow);
+    wnoutrefresh(bgWindow);
 }
 
 static void checkForInputs()
