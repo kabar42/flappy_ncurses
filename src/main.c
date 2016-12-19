@@ -17,6 +17,7 @@ static void initPlayer();
 static void draw();
 static void drawBg();
 static void checkForInputs();
+static void cleanup();
 
 static chtype BG_CHAR;
 static const int BG_COLOR = 2;
@@ -63,9 +64,9 @@ static void setScreenOptions()
 
 static void setColorPairs()
 {
-    init_pair(1, COLOR_BLACK,  COLOR_YELLOW);
-    init_pair(2, COLOR_BLUE,    COLOR_BLUE);
-    init_pair(3, COLOR_YELLOW,  COLOR_BLUE);
+    init_pair(1, COLOR_BLACK,   COLOR_YELLOW);  // Bird
+    init_pair(2, COLOR_BLUE,    COLOR_BLUE);    // BG
+    init_pair(3, COLOR_GREEN,   COLOR_GREEN);   // Pipes
     init_pair(4, COLOR_BLUE,    COLOR_BLUE);
     init_pair(5, COLOR_CYAN,    COLOR_BLUE);
     init_pair(6, COLOR_MAGENTA, COLOR_BLUE);
@@ -91,8 +92,7 @@ static void runGame()
 
         if(player.dead)
         {
-            (void) delwin(player.window);
-            (void) delwin(bgWindow);
+            cleanup();
             return;
         }
 
@@ -159,5 +159,11 @@ static void checkForInputs()
     default:
         break;
     }
+}
+
+static void cleanup()
+{
+    (void) delwin(player.window);
+    (void) delwin(bgWindow);
 }
 

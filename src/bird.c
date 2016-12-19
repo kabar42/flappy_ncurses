@@ -22,7 +22,18 @@ void updatePlayer(Bird_T* player)
     checkBounds(player);
 }
 
-void checkBounds(Bird_T* player)
+void jumpPlayer(Bird_T* player)
+{
+    (*player).speed = BLOCK_HEIGHT;
+}
+
+void drawPlayer(Bird_T* player)
+{
+    mvwin((*player).window, (*player).yPos, (*player).xPos);
+    wnoutrefresh((*player).window);
+}
+
+static void checkBounds(Bird_T* player)
 {
     if((*player).yPos < 0)
     {
@@ -41,16 +52,5 @@ void checkBounds(Bird_T* player)
     {
         (*player).xPos = COLS;
     }
-}
-
-void jumpPlayer(Bird_T* player)
-{
-    (*player).speed = BLOCK_HEIGHT;
-}
-
-void drawPlayer(Bird_T* player)
-{
-    mvwin((*player).window, (*player).yPos, (*player).xPos);
-    wnoutrefresh((*player).window);
 }
 

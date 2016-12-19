@@ -18,8 +18,8 @@ typedef struct Bird {
 } Bird_T;
 
 void updatePlayer(Bird_T* player);
-void checkBounds(Bird_T* player);
 void jumpPlayer(Bird_T* player);
 void drawPlayer(Bird_T* player);
+static void checkBounds(Bird_T* player);
 
 #endif
