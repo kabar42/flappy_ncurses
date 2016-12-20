@@ -7,6 +7,7 @@
 #include <curses.h>
 
 #include "bird.h"
+#include "pipe.h"
 
 static void finish(int sig);
 static void setScreenOptions();
@@ -24,6 +25,7 @@ static const int BG_COLOR = 2;
 static const clock_t TICK = 0.05 * CLOCKS_PER_SEC;  // Tick length for the game
 
 static Bird_T player;
+static Pipe_T firstPipe;
 WINDOW* rootWin;
 WINDOW* bgWindow;
 
@@ -76,6 +78,7 @@ static void setColorPairs()
 static void runGame()
 {
     initBg();
+    initPipe(&firstPipe);
     initPlayer();
     draw();
 
@@ -87,6 +90,7 @@ static void runGame()
         {
             lastTick = currentTick;
             updatePlayer(&player);
+            updatePipe(&firstPipe, 20);
             draw();
         }
 
@@ -136,6 +140,10 @@ static void initPlayer()
 static void draw()
 {
     drawBg();
+    if(firstPipe.shouldReap == false)
+    {
+        drawPipe(&firstPipe);
+    }
     drawPlayer(&player);
     doupdate();
 }
