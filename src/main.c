@@ -15,6 +15,7 @@ static void setColorPairs();
 static void runGame();
 static void initBg();
 static void initPlayer();
+static void checkCollisions();
 static void draw();
 static void drawBg();
 static void checkForInputs();
@@ -91,6 +92,7 @@ static void runGame()
             lastTick = currentTick;
             updatePlayer(&player);
             updatePipe(&firstPipe, 20);
+            checkCollisions();
             draw();
         }
 
@@ -135,6 +137,36 @@ static void initPlayer()
 
     wattrset(player.window, COLOR_PAIR(player.colorPair));
     mvwaddch(player.window, 0, 0, player.dispChar);
+}
+
+static void checkCollisions()
+{
+    int max_x = COLS;
+    int max_y = LINES;
+    getmaxyx(rootWin, max_y, max_x);
+    if(player.yPos > max_y)
+    {
+        player.dead = true;
+    }
+
+    int top_x = COLS;
+    int top_y = 0;
+    getmaxyx(firstPipe.topPipe, top_y, top_x);
+    if(player.xPos >= firstPipe.position &&
+       player.xPos <= (firstPipe.position + firstPipe.width) &&
+       player.yPos <= top_y)
+    {
+        player.dead = true;
+    }
+
+    int bot_x, bot_y;
+    getbegyx(firstPipe.bottomPipe, bot_y, bot_x);
+    if(player.xPos >= firstPipe.position &&
+       player.xPos <= (firstPipe.position + firstPipe.width) &&
+       player.yPos >= bot_y)
+    {
+        player.dead = true;
+    }
 }
 
 static void draw()

@@ -39,11 +39,6 @@ static void checkBounds(Bird_T* player)
     {
         (*player).yPos = 0;
     }
-    if((*player).yPos > LINES)
-    {
-        (*player).yPos = LINES;
-        (*player).dead = true;
-    }
     if((*player).xPos < 0 )
     {
         (*player).xPos = 0;
