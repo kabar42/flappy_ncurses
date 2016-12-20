@@ -14,7 +14,6 @@ static void setScreenOptions();
 static void setColorPairs();
 static void runGame();
 static void initBg();
-static void initPlayer();
 static void checkCollisions();
 static void draw();
 static void drawBg();
@@ -80,7 +79,7 @@ static void runGame()
 {
     initBg();
     initPipe(&firstPipe);
-    initPlayer();
+    initPlayer(&player);
     draw();
 
     clock_t lastTick = 0;
@@ -124,21 +123,6 @@ static void initBg()
     }
 }
 
-static void initPlayer()
-{
-    player.xPos = (COLS / 4);
-    player.yPos = (LINES / 2);
-    player.speed = 0;
-    player.posInBlock = (BLOCK_HEIGHT / 2);
-    player.dispChar = 'W';
-    player.colorPair = 1;
-    player.dead = false;
-    player.window = newwin(1, 1, player.yPos, player.xPos);
-
-    wattrset(player.window, COLOR_PAIR(player.colorPair));
-    mvwaddch(player.window, 0, 0, player.dispChar);
-}
-
 static void checkCollisions()
 {
     int max_x = COLS;
@@ -154,7 +138,7 @@ static void checkCollisions()
     getmaxyx(firstPipe.topPipe, top_y, top_x);
     if(player.xPos >= firstPipe.position &&
        player.xPos <= (firstPipe.position + firstPipe.width) &&
-       player.yPos <= top_y)
+       player.yPos <= (top_y - 1))
     {
         player.dead = true;
     }

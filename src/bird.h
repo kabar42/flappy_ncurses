@@ -17,6 +17,7 @@ typedef struct Bird {
     int colorPair;
 } Bird_T;
 
+void initPlayer(Bird_T* player);
 void updatePlayer(Bird_T* player);
 void jumpPlayer(Bird_T* player);
 void drawPlayer(Bird_T* player);

@@ -1,5 +1,20 @@
 #include "bird.h"
 
+void initPlayer(Bird_T* player)
+{
+    (*player).xPos = (COLS / 4);
+    (*player).yPos = (LINES / 2);
+    (*player).speed = 0;
+    (*player).posInBlock = (BLOCK_HEIGHT / 2);
+    (*player).dispChar = 'W';
+    (*player).colorPair = 1;
+    (*player).dead = false;
+    (*player).window = newwin(1, 1, (*player).yPos, (*player).xPos);
+
+    wattrset((*player).window, COLOR_PAIR((*player).colorPair));
+    mvwaddch((*player).window, 0, 0, (*player).dispChar);
+}
+
 void updatePlayer(Bird_T* player)
 {
     (*player).speed--;
