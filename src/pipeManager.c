@@ -1,10 +1,11 @@
-#include <stdlib.h>
 #include <curses.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include "bird.h"
 #include "pipeManager.h"
 
-
+static int distanceToNextPipe = MAX_PIPE_SEPARATION; 
 void initManager(PipeManager_T* manager)
 {
     for(int i=0; i < MAX_PIPE_COUNT; i++)
@@ -15,17 +16,7 @@ void initManager(PipeManager_T* manager)
 
 void initPipes(PipeManager_T* manager)
 {
-    Pipe_T* firstPipe = malloc(sizeof(Pipe_T));
-    initPipe(firstPipe);
-
-    for(int i=0; i < MAX_PIPE_COUNT; i++)
-    {
-        if(manager->pipeList[i] == NULL)
-        {
-            manager->pipeList[i] = firstPipe;
-            break;
-        }
-    }
+    addNewPipe(manager);
 }
 
 void updatePipes(PipeManager_T* manager, int speed)
@@ -44,6 +35,11 @@ void updatePipes(PipeManager_T* manager, int speed)
             free(curPipe);
             manager->pipeList[i] = NULL;
         }
+    }
+
+    if(shouldAddPipe(manager))
+    {
+        addNewPipe(manager);
     }
 }
 
@@ -88,5 +84,56 @@ void checkPipeCollisions(PipeManager_T* manager, Bird_T* player)
             }
         }
     }
+}
+
+static void addNewPipe(PipeManager_T* manager)
+{
+    Pipe_T* newPipe = malloc(sizeof(Pipe_T));
+    initPipe(newPipe);
+
+    for(int i=0; i < MAX_PIPE_COUNT; i++)
+    {
+        if(manager->pipeList[i] == NULL)
+        {
+            manager->pipeList[i] = newPipe;
+
+            srand(clock() % 7027);
+            distanceToNextPipe = (rand() % (MAX_PIPE_SEPARATION - MIN_PIPE_SEPARATION)) + MIN_PIPE_SEPARATION;
+
+            if(distanceToNextPipe >= COLS)
+            {
+                distanceToNextPipe = COLS-1;
+            }
+            if(distanceToNextPipe <= 0)
+            {
+                distanceToNextPipe = 0;
+            }
+            break;
+        }
+    }
+}
+
+static bool shouldAddPipe(PipeManager_T* manager)
+{
+    int lastPipeX = 0;
+    bool shouldAdd = false;
+
+    for(int i=0; i < MAX_PIPE_COUNT; i++)
+    {
+        if(manager->pipeList[i] != NULL)
+        {
+            if(manager->pipeList[i]->position > lastPipeX)
+            {
+                lastPipeX = manager->pipeList[i]->position;
+            }
+        }
+    }
+
+    if((lastPipeX + distanceToNextPipe) < COLS)
+    {
+        shouldAdd = true;
+    }
+
+    return shouldAdd;
 }
 
