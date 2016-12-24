@@ -7,7 +7,7 @@
 #include <curses.h>
 
 #include "bird.h"
-#include "pipe.h"
+#include "pipeManager.h"
 
 static void finish(int sig);
 static void setScreenOptions();
@@ -25,7 +25,7 @@ static const int BG_COLOR = 2;
 static const clock_t TICK = 0.05 * CLOCKS_PER_SEC;  // Tick length for the game
 
 static Bird_T player;
-static Pipe_T firstPipe;
+static PipeManager_T pipeManager;
 WINDOW* rootWin;
 WINDOW* bgWindow;
 
@@ -78,7 +78,8 @@ static void setColorPairs()
 static void runGame()
 {
     initBg();
-    initPipe(&firstPipe);
+    initManager(&pipeManager);
+    initPipes(&pipeManager);
     initPlayer(&player);
     draw();
 
@@ -90,7 +91,7 @@ static void runGame()
         {
             lastTick = currentTick;
             updatePlayer(&player);
-            updatePipe(&firstPipe, 20);
+            updatePipes(&pipeManager, 20);
             checkCollisions();
             draw();
         }
@@ -133,33 +134,13 @@ static void checkCollisions()
         player.dead = true;
     }
 
-    int top_x = COLS;
-    int top_y = 0;
-    getmaxyx(firstPipe.topPipe, top_y, top_x);
-    if(player.xPos >= firstPipe.position &&
-       player.xPos <= (firstPipe.position + firstPipe.width) &&
-       player.yPos <= (top_y - 1))
-    {
-        player.dead = true;
-    }
-
-    int bot_x, bot_y;
-    getbegyx(firstPipe.bottomPipe, bot_y, bot_x);
-    if(player.xPos >= firstPipe.position &&
-       player.xPos <= (firstPipe.position + firstPipe.width) &&
-       player.yPos >= bot_y)
-    {
-        player.dead = true;
-    }
+    checkPipeCollisions(&pipeManager, &player);
 }
 
 static void draw()
 {
     drawBg();
-    if(firstPipe.shouldReap == false)
-    {
-        drawPipe(&firstPipe);
-    }
+    drawPipes(&pipeManager);
     drawPlayer(&player);
     doupdate();
 }
