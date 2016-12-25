@@ -6,6 +6,7 @@
 #include "pipeManager.h"
 
 static int distanceToNextPipe = MAX_PIPE_SEPARATION; 
+
 void initManager(PipeManager_T* manager)
 {
     for(int i=0; i < MAX_PIPE_COUNT; i++)
@@ -25,15 +26,18 @@ void updatePipes(PipeManager_T* manager, int speed)
     {
         Pipe_T* curPipe = manager->pipeList[i];
 
-        if(curPipe != NULL && !curPipe->shouldReap)
+        if(curPipe != NULL)
         {
-            updatePipe(curPipe, speed);
-        }
+            if(!curPipe->shouldReap)
+            {
+                updatePipe(curPipe, speed);
+            }
 
-        if(curPipe != NULL && curPipe->shouldReap)
-        {
-            free(curPipe);
-            manager->pipeList[i] = NULL;
+            if(curPipe->shouldReap)
+            {
+                free(curPipe);
+                manager->pipeList[i] = NULL;
+            }
         }
     }
 
@@ -84,6 +88,28 @@ void checkPipeCollisions(PipeManager_T* manager, Bird_T* player)
             }
         }
     }
+}
+
+int updateScore(PipeManager_T* manager, Bird_T* player)
+{
+    int addToScore = 0;
+
+    for(int i=0; i < MAX_PIPE_COUNT; i++)
+    {
+        Pipe_T* curPipe = manager->pipeList[i];
+
+        if(manager->pipeList[i] != NULL)
+        {
+            if(player->xPos > (curPipe->position + curPipe->width) &&
+               !curPipe->countedInScore)
+            {
+                addToScore++;
+                curPipe->countedInScore = true;
+            }
+        }
+    }
+
+    return addToScore;
 }
 
 static void addNewPipe(PipeManager_T* manager)

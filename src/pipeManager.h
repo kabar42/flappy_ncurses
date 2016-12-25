@@ -16,6 +16,7 @@ void initPipes(PipeManager_T* manager);
 void updatePipes(PipeManager_T* manager, int speed);
 void drawPipes(PipeManager_T* manager);
 void checkPipeCollisions(PipeManager_T* manager, Bird_T* player);
+int updateScore(PipeManager_T* manager, Bird_T* player);
 static void addNewPipe(PipeManager_T* manager);
 static bool shouldAddPipe(PipeManager_T* manager);
 

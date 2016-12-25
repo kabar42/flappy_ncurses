@@ -9,25 +9,43 @@
 #include "bird.h"
 #include "pipeManager.h"
 
+/////////////////////////////////
+// Function declarations
+/////////////////////////////////
 static void finish(int sig);
 static void setScreenOptions();
 static void setColorPairs();
 static void runGame();
 static void initBg();
+static void initScore();
 static void checkCollisions();
 static void draw();
 static void drawBg();
+static void drawScore();
 static void checkForInputs();
 static void cleanup();
 
+/////////////////////////////////
+// Constants
+/////////////////////////////////
 static chtype BG_CHAR;
 static const int BG_COLOR = 2;
+static const int SCORE_COLOR = 4;
 static const clock_t TICK = 0.05 * CLOCKS_PER_SEC;  // Tick length for the game
+static const int SCORE_WIN_LINES = 3;
+static const int SCORE_WIN_COLS = 20;
+
+/////////////////////////////////
+// Variables
+/////////////////////////////////
+static int pipeSpeed = 15;
+static int score = 0;
 
 static Bird_T player;
 static PipeManager_T pipeManager;
 WINDOW* rootWin;
 WINDOW* bgWindow;
+WINDOW* scoreWindow;
 
 int main(int argc, char *argv[])
 {
@@ -69,7 +87,7 @@ static void setColorPairs()
     init_pair(1, COLOR_BLACK,   COLOR_YELLOW);  // Bird
     init_pair(2, COLOR_BLUE,    COLOR_BLUE);    // BG
     init_pair(3, COLOR_GREEN,   COLOR_GREEN);   // Pipes
-    init_pair(4, COLOR_BLUE,    COLOR_BLUE);
+    init_pair(4, COLOR_WHITE,   COLOR_BLUE);    // Score window
     init_pair(5, COLOR_CYAN,    COLOR_BLUE);
     init_pair(6, COLOR_MAGENTA, COLOR_BLUE);
     init_pair(7, COLOR_WHITE,   COLOR_BLUE);
@@ -81,6 +99,7 @@ static void runGame()
     initManager(&pipeManager);
     initPipes(&pipeManager);
     initPlayer(&player);
+    initScore();
     draw();
 
     clock_t lastTick = 0;
@@ -91,8 +110,9 @@ static void runGame()
         {
             lastTick = currentTick;
             updatePlayer(&player);
-            updatePipes(&pipeManager, 20);
+            updatePipes(&pipeManager, pipeSpeed);
             checkCollisions();
+            score += updateScore(&pipeManager, &player);
             draw();
         }
 
@@ -124,12 +144,28 @@ static void initBg()
     }
 }
 
+static void initScore()
+{
+    score = 0;
+    scoreWindow = newwin(SCORE_WIN_LINES, SCORE_WIN_COLS, 0, 0);
+    wattrset(scoreWindow, COLOR_PAIR(SCORE_COLOR));
+    int max_x, max_y;
+    getmaxyx(scoreWindow, max_y, max_x);
+    for(int y=0; y < max_y; y++)
+    {
+        for(int x=0; x < max_x; x++)
+        {
+            mvwaddch(scoreWindow, y, x, ' ');
+        }
+    }
+}
+
 static void checkCollisions()
 {
     int max_x = COLS;
     int max_y = LINES;
     getmaxyx(rootWin, max_y, max_x);
-    if(player.yPos > max_y)
+    if(player.yPos > max_y)     // player fell past the bottom of the screen
     {
         player.dead = true;
     }
@@ -142,6 +178,7 @@ static void draw()
     drawBg();
     drawPipes(&pipeManager);
     drawPlayer(&player);
+    drawScore();
     doupdate();
 }
 
@@ -149,6 +186,15 @@ static void drawBg()
 {
     touchwin(bgWindow);
     wnoutrefresh(bgWindow);
+}
+
+static void drawScore()
+{
+    box(scoreWindow, 0, 0);
+    char scoreText[15] = "";
+    sprintf(scoreText, "Score: %d", score);
+    mvwaddstr(scoreWindow, 1, 2, scoreText);
+    wnoutrefresh(scoreWindow);
 }
 
 static void checkForInputs()
@@ -170,5 +216,6 @@ static void cleanup()
 {
     (void) delwin(player.window);
     (void) delwin(bgWindow);
+    (void) delwin(scoreWindow);
 }
 

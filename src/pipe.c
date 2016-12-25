@@ -24,6 +24,7 @@ void initPipe(Pipe_T* pipe)
                                 PIPE_WIDTH,
                                 (pipe->gapPos + pipe->gapSize + 1),
                                 pipe->position);
+    pipe->countedInScore = false;
     pipe->shouldReap = false;
 
     fillInPipeSegment(pipe->topPipe);

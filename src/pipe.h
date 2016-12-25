@@ -20,6 +20,7 @@ typedef struct Pipe
     int posInBlock;
     WINDOW* topPipe;
     WINDOW* bottomPipe;
+    bool countedInScore;
     bool shouldReap;
 } Pipe_T;
 
