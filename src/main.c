@@ -1,6 +1,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -15,13 +16,19 @@
 static void finish(int sig);
 static void setScreenOptions();
 static void setColorPairs();
+static void showInstructions();
+static void showFinalScore();
 static void runGame();
 static void initBg();
 static void initScore();
+static void initInstructions();
+static void initFinalScore();
 static void checkCollisions();
 static void draw();
 static void drawBg();
 static void drawScore();
+static void drawInstructions();
+static void drawFinalScore();
 static void checkForInputs();
 static void cleanup();
 
@@ -34,6 +41,10 @@ static const int SCORE_COLOR = 4;
 static const clock_t TICK = 0.05 * CLOCKS_PER_SEC;  // Tick length for the game
 static const int SCORE_WIN_LINES = 3;
 static const int SCORE_WIN_COLS = 20;
+static const int INSTRUCTIONS_WIN_LINES = 10;
+static const int INSTRUCTIONS_WIN_COLS = 35;
+static const int FINAL_SCORE_WIN_LINES = 8;
+static const int FINAL_SCORE_WIN_COLS = 31;
 
 /////////////////////////////////
 // Variables
@@ -46,16 +57,20 @@ static PipeManager_T pipeManager;
 WINDOW* rootWin;
 WINDOW* bgWindow;
 WINDOW* scoreWindow;
+WINDOW* instructionsWindow;
+WINDOW* finalScoreWindow;
 
 int main(int argc, char *argv[])
 {
     (void) signal(SIGINT, finish);
     setScreenOptions();
+    showInstructions();
 
     for(;;)
     {
         runGame();
     }
+
     finish(0);
 }
 
@@ -67,7 +82,7 @@ static void finish(int sig)
 
 static void setScreenOptions()
 {
-    rootWin = initscr();       // initialize the curses library
+    rootWin = initscr();    // initialize the curses library
     keypad(stdscr, TRUE);   // enable keyboard mapping
     (void) cbreak();        // take input chars one at a time, no waiting for \n
     // (void) nonl();          // tell curses not to do NL->CR/NL on output
@@ -93,6 +108,54 @@ static void setColorPairs()
     init_pair(7, COLOR_WHITE,   COLOR_BLUE);
 }
 
+static void showInstructions()
+{
+    initBg();
+    initInstructions();
+    drawBg();
+    drawInstructions();
+    doupdate();
+
+    timeout(-1);
+
+    int ch = wgetch(instructionsWindow);
+
+    (void) delwin(bgWindow);
+    (void) delwin(instructionsWindow);
+
+    if(ch == 'q' || ch == 'Q')
+    {
+        finish(0);
+    }
+
+    timeout(0);
+}
+
+static void showFinalScore()
+{
+    initBg();
+    initFinalScore();
+    drawBg();
+    drawFinalScore();
+    doupdate();
+
+    timeout(-1);
+
+    int ch = wgetch(finalScoreWindow);
+
+    (void) delwin(bgWindow);
+    (void) delwin(finalScoreWindow);
+
+    if(ch == 'q' || ch == 'Q')
+    {
+        cleanup();
+        finish(0);
+    }
+
+    timeout(0);
+}
+
+
 static void runGame()
 {
     initBg();
@@ -101,6 +164,7 @@ static void runGame()
     initPlayer(&player);
     initScore();
     draw();
+
 
     clock_t lastTick = 0;
     for (;;)
@@ -118,6 +182,7 @@ static void runGame()
 
         if(player.dead)
         {
+            showFinalScore();
             cleanup();
             return;
         }
@@ -149,6 +214,7 @@ static void initScore()
     score = 0;
     scoreWindow = newwin(SCORE_WIN_LINES, SCORE_WIN_COLS, 0, 0);
     wattrset(scoreWindow, COLOR_PAIR(SCORE_COLOR));
+
     int max_x, max_y;
     getmaxyx(scoreWindow, max_y, max_x);
     for(int y=0; y < max_y; y++)
@@ -156,6 +222,44 @@ static void initScore()
         for(int x=0; x < max_x; x++)
         {
             mvwaddch(scoreWindow, y, x, ' ');
+        }
+    }
+}
+
+static void initInstructions()
+{
+    instructionsWindow = newwin(INSTRUCTIONS_WIN_LINES, 
+                                INSTRUCTIONS_WIN_COLS,
+                                ((LINES - INSTRUCTIONS_WIN_LINES) / 2),
+                                ((COLS - INSTRUCTIONS_WIN_COLS) / 2));
+    wattrset(instructionsWindow, COLOR_PAIR(SCORE_COLOR));
+
+    int max_x, max_y;
+    getmaxyx(instructionsWindow, max_y, max_x);
+    for(int y=0; y < max_y; y++)
+    {
+        for(int x=0; x < max_x; x++)
+        {
+            mvwaddch(instructionsWindow, y, x, ' ');
+        }
+    }
+}
+
+static void initFinalScore()
+{
+    finalScoreWindow = newwin(FINAL_SCORE_WIN_LINES, 
+                              FINAL_SCORE_WIN_COLS,
+                              ((LINES - FINAL_SCORE_WIN_LINES) / 2),
+                              ((COLS - FINAL_SCORE_WIN_COLS) / 2));
+    wattrset(finalScoreWindow, COLOR_PAIR(SCORE_COLOR));
+
+    int max_x, max_y;
+    getmaxyx(finalScoreWindow, max_y, max_x);
+    for(int y=0; y < max_y; y++)
+    {
+        for(int x=0; x < max_x; x++)
+        {
+            mvwaddch(finalScoreWindow, y, x, ' ');
         }
     }
 }
@@ -197,6 +301,52 @@ static void drawScore()
     wnoutrefresh(scoreWindow);
 }
 
+static void drawInstructions()
+{
+    int curLine = 1;
+    int max_x = COLS;
+    int max_y = LINES;
+    getmaxyx(instructionsWindow, max_y, max_x);
+
+    box(instructionsWindow, 0, 0);
+    const char* title = "INSTRUCTIONS";
+    mvwaddstr(instructionsWindow, curLine, ((max_x - strlen(title)) / 2), title);
+    curLine += 2;
+    const char* jump = "SPACE   -   Jump"; 
+    mvwaddstr(instructionsWindow, curLine, 2, jump);
+    curLine++;
+    const char* quit = "Q       -   Quit"; 
+    mvwaddstr(instructionsWindow, curLine, 2, quit);
+
+    curLine = max_y - 2;
+    const char* continueStr = "PRESS ANY KEY TO CONTINUE";
+    mvwaddstr(instructionsWindow, curLine, ((max_x - strlen(continueStr)) / 2), continueStr);
+
+    wnoutrefresh(instructionsWindow);
+}
+
+static void drawFinalScore()
+{
+    int curLine = 1;
+    int max_x = COLS;
+    int max_y = LINES;
+    getmaxyx(finalScoreWindow, max_y, max_x);
+
+    box(finalScoreWindow, 0, 0);
+    const char* title = "SCORE";
+    mvwaddstr(finalScoreWindow, curLine, ((max_x - strlen(title)) / 2), title);
+    curLine += 2;
+    char scoreStr[(FINAL_SCORE_WIN_COLS-4)]; 
+    sprintf(scoreStr, "%d", score);
+    mvwaddstr(finalScoreWindow, curLine, ((max_x - strlen(scoreStr)) / 2), scoreStr);
+
+    curLine = max_y - 2;
+    const char* continueStr = "PRESS ANY KEY TO CONTINUE";
+    mvwaddstr(finalScoreWindow, curLine, ((max_x - strlen(continueStr)) / 2), continueStr);
+
+    wnoutrefresh(finalScoreWindow);
+}
+
 static void checkForInputs()
 {
     int c = getch();
@@ -217,5 +367,7 @@ static void cleanup()
     (void) delwin(player.window);
     (void) delwin(bgWindow);
     (void) delwin(scoreWindow);
+    (void) delwin(instructionsWindow);
+    cleanupPipes(&pipeManager);
 }
 

@@ -60,6 +60,20 @@ void drawPipes(PipeManager_T* manager)
     }
 }
 
+void cleanupPipes(PipeManager_T* manager)
+{
+    for(int i=0; i < MAX_PIPE_COUNT; i++)
+    {
+        Pipe_T* curPipe = manager->pipeList[i];
+
+        if(curPipe != NULL)
+        {
+            free(curPipe);
+            manager->pipeList[i] = NULL;
+        }
+    }
+}
+
 void checkPipeCollisions(PipeManager_T* manager, Bird_T* player)
 {
     for(int i=0; i < MAX_PIPE_COUNT; i++)
