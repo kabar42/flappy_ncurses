@@ -49,7 +49,7 @@ static const int FINAL_SCORE_WIN_COLS = 31;
 /////////////////////////////////
 // Variables
 /////////////////////////////////
-static int pipeSpeed = 15;
+static int pipeSpeed = 20;
 static int score = 0;
 
 static Bird_T player;
@@ -141,7 +141,11 @@ static void showFinalScore()
 
     timeout(-1);
 
-    int ch = wgetch(finalScoreWindow);
+    int ch = 0;
+    do {
+        ch = wgetch(finalScoreWindow);
+    } while (ch != 'q' && ch != 'Q'
+             && ch != '\r' && ch != '\n');
 
     (void) delwin(bgWindow);
     (void) delwin(finalScoreWindow);
@@ -341,7 +345,7 @@ static void drawFinalScore()
     mvwaddstr(finalScoreWindow, curLine, ((max_x - strlen(scoreStr)) / 2), scoreStr);
 
     curLine = max_y - 2;
-    const char* continueStr = "PRESS ANY KEY TO CONTINUE";
+    const char* continueStr = "PRESS ENTER TO CONTINUE";
     mvwaddstr(finalScoreWindow, curLine, ((max_x - strlen(continueStr)) / 2), continueStr);
 
     wnoutrefresh(finalScoreWindow);

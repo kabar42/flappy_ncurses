@@ -4,7 +4,7 @@
 #include "pipe.h"
 
 #define MAX_PIPE_COUNT 10
-#define MAX_PIPE_SEPARATION 200
+#define MAX_PIPE_SEPARATION 150
 #define MIN_PIPE_SEPARATION 50
 
 typedef struct PipeManager {

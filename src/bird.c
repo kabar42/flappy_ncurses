@@ -17,7 +17,7 @@ void initPlayer(Bird_T* player)
 
 void updatePlayer(Bird_T* player)
 {
-    player->speed--;
+    player->speed = player->speed - 2;
     player->posInBlock = player->posInBlock + player->speed;
 
     // Check if the player block should move down
@@ -39,7 +39,7 @@ void updatePlayer(Bird_T* player)
 
 void jumpPlayer(Bird_T* player)
 {
-    player->speed = BLOCK_HEIGHT;
+    player->speed = BLOCK_HEIGHT * 1.5;
 }
 
 void drawPlayer(Bird_T* player)

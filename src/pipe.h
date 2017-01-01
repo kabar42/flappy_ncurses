@@ -5,8 +5,8 @@
 
 static const int PIPE_COLOR = 3; 
 static const int PIPE_WIDTH = 10;
-static const int PIPE_MIN_GAP_SIZE = 5;
-static const int PIPE_MAX_GAP_SIZE = 15;
+static const int PIPE_MIN_GAP_SIZE = 4;
+static const int PIPE_MAX_GAP_SIZE = 10;
 static const int PIPE_MIN_GAP_POS = 3;
 static int PIPE_MAX_GAP_POS;
 static const int PIPE_BLOCK_WIDTH = 10;
